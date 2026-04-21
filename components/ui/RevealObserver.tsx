@@ -9,6 +9,8 @@ import { useEffect } from "react";
  */
 export default function RevealObserver() {
   useEffect(() => {
+    document.documentElement.classList.add("js-reveal");
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
