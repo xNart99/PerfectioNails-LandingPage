@@ -2,32 +2,235 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================
+   Design tokens — mapped to CSS variables so both
+   Tailwind classes and raw var() references work.
+   ===================================================== */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --cream:       oklch(0.985 0.008 85);
+  --cream-warm:  oklch(0.97 0.012 82);
+  --cream-deep:  oklch(0.94 0.015 80);
+  --ink:         oklch(0.22 0.01 80);
+  --ink-soft:    oklch(0.38 0.008 80);
+  --ink-faint:   oklch(0.56 0.006 80);
+  --rule:        oklch(0.88 0.008 80);
+  --rule-soft:   oklch(0.92 0.008 80);
+  --gold:        oklch(0.72 0.12 85);
+  --gold-deep:   oklch(0.62 0.11 80);
+  --gold-soft:   oklch(0.88 0.06 88);
+
+  --max:    1280px;
+  --gutter: clamp(20px, 4vw, 56px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+/* =====================================================
+   Base reset + body
+   ===================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
+
+html { scroll-behavior: smooth; }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+  overflow-x: hidden;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Subtle paper grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0.08 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
 }
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4 { font-weight: 400; line-height: 1.1; color: var(--ink); }
+
+/* =====================================================
+   Layout helpers
+   ===================================================== */
+.container {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  position: relative;
+  z-index: 2;
+}
+
+/* =====================================================
+   Placeholder image block (ph) — used before real
+   photos are uploaded; shows a diagonal hatch pattern.
+   ===================================================== */
+.ph {
+  position: relative;
+  background: linear-gradient(135deg, var(--cream-deep) 0%, var(--cream-warm) 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  color: var(--ink-faint);
+}
+.ph::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 14px,
+    color-mix(in oklab, var(--gold) 8%, transparent) 14px 15px
+  );
+}
+.ph-label {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: color-mix(in oklab, var(--cream) 90%, transparent);
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  z-index: 2;
+}
+.ph img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; inset: 0;
+}
+.ph img + .ph-label {
+  background: color-mix(in oklab, oklch(0.1 0 0) 60%, transparent);
+  color: oklch(0.98 0 0);
+  border-color: transparent;
+  backdrop-filter: blur(4px);
+}
+
+/* =====================================================
+   Reveal-on-scroll animation
+   ===================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =====================================================
+   Ornament divider (— ✦ —)
+   ===================================================== */
+.ornament {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.ornament::before,
+.ornament::after {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: currentColor;
+}
+.ornament .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* =====================================================
+   Marquee animation
+   ===================================================== */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* =====================================================
+   Prose styles for blog post body
+   ===================================================== */
+.prose-nail p {
+  font-family: var(--font-cormorant), serif;
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+.prose-nail h2 {
+  font-family: var(--font-italiana), serif;
+  font-size: 40px;
+  margin: 64px 0 20px;
+  line-height: 1.1;
+}
+.prose-nail h3 {
+  font-family: var(--font-cormorant), serif;
+  font-size: 26px;
+  font-weight: 500;
+  margin: 40px 0 14px;
+}
+.prose-nail ul,
+.prose-nail ol {
+  list-style: none;
+  margin: 0 0 28px 0;
+  padding-left: 0;
+}
+.prose-nail ul li,
+.prose-nail ol li {
+  font-family: var(--font-cormorant), serif;
+  font-size: 18px;
+  line-height: 1.6;
+  padding: 10px 0 10px 32px;
+  position: relative;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.prose-nail ul li::before {
+  content: '✦';
+  position: absolute;
+  left: 0; top: 14px;
+  color: var(--gold);
+  font-size: 12px;
+}
+.prose-nail blockquote {
+  margin: 48px 0;
+  padding: 32px 40px;
+  border-left: 2px solid var(--gold);
+  font-family: var(--font-italiana), serif;
+  font-size: 32px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.prose-nail blockquote cite {
+  display: block;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-style: normal;
+  margin-top: 18px;
+}
+.prose-nail a {
+  color: var(--ink);
+  border-bottom: 1px solid var(--gold);
+  transition: color 0.2s;
+}
+.prose-nail a:hover { color: var(--gold-deep); }
