@@ -24,7 +24,7 @@ async function main() {
   const user = await prisma.user.upsert({
     where: { email },
     update: {},
-    create: { email, password: hash, name: "Chi Nguyen" },
+    create: { email, password: hash, name: "PerfectioNails" },
   });
 
   console.log(`Admin user ready: ${user.email}`);
