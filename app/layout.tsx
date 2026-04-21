@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Cormorant_Garamond, Italiana, Pinyon_Script, JetBrains_Mono } from "next/font/google";
 import SessionProvider from "@/components/ui/SessionProvider";
 import LocalBusinessSchema from "@/components/ui/LocalBusinessSchema";
+import GoogleAnalytics from "@/components/ui/GoogleAnalytics";
 import "./globals.css";
 
 /* ── Google Fonts loaded via next/font for optimal performance ── */
@@ -89,6 +90,10 @@ export default function RootLayout({
       <head>
         {/* JSON-LD structured data for Google Local Business */}
         <LocalBusinessSchema />
+        {/* Google Analytics — only injected when GA ID env var is set */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </head>
       <body>
         <SessionProvider>{children}</SessionProvider>
